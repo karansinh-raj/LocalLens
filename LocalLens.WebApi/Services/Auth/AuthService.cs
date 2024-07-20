@@ -6,6 +6,7 @@ using LocalLens.WebApi.Entities;
 using LocalLens.WebApi.Errors.Auth;
 using LocalLens.WebApi.Messages.Auth;
 using LocalLens.WebApi.ResultPattern;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -18,6 +19,7 @@ public class AuthService : IAuthService
 {
     private readonly ILogger<AuthService> _logger;
     private readonly LocalLensDbContext _dbContext;
+    private readonly UserManager<User> _userManager;
     private readonly GoogleAuthConfig _googleAuthConfig;
     private readonly JwtConfig _jwtConfig;
 
@@ -25,10 +27,12 @@ public class AuthService : IAuthService
         ILogger<AuthService> logger, 
         IOptions<GoogleAuthConfig> googleAuthConfig,
         IOptions<JwtConfig> jwtConfig,
-        LocalLensDbContext dbContext)
+        LocalLensDbContext dbContext,
+        UserManager<User> userManager)
     {
         _logger = logger;
         _dbContext = dbContext;
+        _userManager = userManager;
         _googleAuthConfig = googleAuthConfig.Value;
         _jwtConfig = jwtConfig.Value;
     }
@@ -45,15 +49,17 @@ public class AuthService : IAuthService
             return AuthErrors.InvalidAccessToken;
         }
 
+        var userId = Guid.NewGuid();
+
         var resultOfCreateUser = await
-            CreateUserIfNotExists(userInfo.Email, userInfo.FirstName, userInfo.LastName, userInfo.ProfileUrl);
+            CreateUserIfNotExists(userId, userInfo.Email, userInfo.FirstName, userInfo.LastName, userInfo.ProfileUrl);
 
         if (!resultOfCreateUser)
         {
             return AuthErrors.UserCreateFailure;
         }
 
-        var claims = GetClaims(userInfo);
+        var claims = GetClaims(userInfo, userId);
         var (accessToken, accessTokenExpiry) = GenerateAccessToken(claims);
 
         var response = new GoogleLoginResponse
@@ -62,7 +68,7 @@ public class AuthService : IAuthService
             ExpiryTimeUtc = accessTokenExpiry
         };
 
-        return (new GoogleLoginResponse(), AuthMessages.LoginSuccess);
+        return (response, AuthMessages.LoginSuccess);
     }
 
     private async Task<GoogleUserDetailsResponse?> ValidateAccessTokenAndGetUserInfoAsync(string idToken)
@@ -92,17 +98,27 @@ public class AuthService : IAuthService
     }
 
     private async Task<bool> CreateUserIfNotExists(
+        Guid userId,
         string email,
         string firstName,
         string lastName,
         string profileUrl)
     {
+        var userFromDb = await _userManager.FindByEmailAsync(email);
+        if (userFromDb is not null)
+        {
+            return await Task.FromResult(true);
+        }
+
         var user = new User
         {
+            Id = userId,
             FirstName = firstName,
             LastName = lastName,
             Email = email,
+            NormalizedEmail = email.ToUpper(),
             UserName = email,
+            NormalizedUserName = email.ToUpper(),
             ProfileUrl = profileUrl,
             LoginProvider = LoginProvider.Google,
             CreatedOnUtc = DateTime.UtcNow
@@ -134,12 +150,13 @@ public class AuthService : IAuthService
     }
 
    private Claim[] GetClaims(
-       GoogleUserDetailsResponse user) =>
+       GoogleUserDetailsResponse user,
+       Guid userId) =>
        [
            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-           new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+           new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
+           new Claim(JwtRegisteredClaimNames.NameId, userId.ToString()),
            new Claim(JwtRegisteredClaimNames.Email, user.Email!.ToString()),
-           new Claim(JwtRegisteredClaimNames.GivenName, user.FirstName!.ToString()),
-           new Claim(JwtRegisteredClaimNames.FamilyName, user.LastName!.ToString()),
+           new Claim(JwtRegisteredClaimNames.GivenName, user.FirstName.ToString()),
        ];
 }

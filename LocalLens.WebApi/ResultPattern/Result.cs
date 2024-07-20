@@ -7,6 +7,7 @@ public class Result
     protected Result()
     {
         IsSuccess = true;
+        Status = 200;
         Error = default;
     }
 
@@ -17,6 +18,8 @@ public class Result
     }
 
     public bool IsSuccess { get; }
+
+    public int Status { get; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public Error? Error { get; }
