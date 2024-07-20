@@ -73,7 +73,10 @@ public static class ServiceCollectionExtensions
 
 
         services
-            .AddIdentity<User, IdentityRole<Guid>>()
+            .AddIdentity<User, IdentityRole<Guid>>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+            })
             .AddEntityFrameworkStores<LocalLensDbContext>()
             .AddDefaultTokenProviders();
 
