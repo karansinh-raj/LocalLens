@@ -3,6 +3,7 @@ using System;
 using LocalLens.WebApi.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LocalLens.WebApi.Migrations
 {
     [DbContext(typeof(LocalLensDbContext))]
-    partial class LocalLensDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240720174457_AddUserQuestionsTable")]
+    partial class AddUserQuestionsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -465,7 +468,7 @@ namespace LocalLens.WebApi.Migrations
 
             modelBuilder.Entity("LocalLens.WebApi.Entities.UserQuestion", b =>
                 {
-                    b.HasOne("LocalLens.WebApi.Entities.Option", "Option")
+                    b.HasOne("LocalLens.WebApi.Entities.Question", "Option")
                         .WithMany()
                         .HasForeignKey("OptionId")
                         .OnDelete(DeleteBehavior.Cascade)
