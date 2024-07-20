@@ -22,4 +22,6 @@ public class LocalLensDbContext : IdentityDbContext<User, IdentityRole<Guid>, Gu
 	public DbSet<Question> Questions { get; set; }
 	public DbSet<Option> Options { get; set; }
     public DbSet<UserQuestion> UserQuestions { get; set; }
+    public DbSet<UserDailyActivity> UserDailyActivities { get; set; }
+
 }
