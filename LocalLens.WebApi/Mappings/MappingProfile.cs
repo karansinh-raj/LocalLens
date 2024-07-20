@@ -12,7 +12,8 @@ public class MappingProfile : Profile
 		CreateMap<Preference, PreferenceResponse>()
 			.ReverseMap();
 		CreateMap<Question, QuestionOptions>()
-			.ReverseMap();
+            .ForMember(x => x.Type, src => src.MapFrom(src => src.questionsType))
+            .ReverseMap();
 		CreateMap<Option, OptionResponse>()
 			.ReverseMap();
 	}
