@@ -15,4 +15,6 @@ public class LocalLensDbContext : IdentityDbContext<User, IdentityRole<Guid>, Gu
     {
         base.OnModelCreating(builder);
     }
+
+    public DbSet<PlaceType> PlaceTypes { get; set; }
 }

@@ -5,6 +5,7 @@ using LocalLens.WebApi.Constants.Configurations;
 using LocalLens.WebApi.Database;
 using LocalLens.WebApi.Entities;
 using LocalLens.WebApi.Services.Auth;
+using LocalLens.WebApi.Services.PlacesTypes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,7 @@ public static class ServiceCollectionExtensions
         services.AddConfigurations(configuration);
         services.AddDatabase(configuration);
         services.AddJwtAuthenticationSettings(configuration);
+        services.AddMappings();
 
         return services;
     }
@@ -41,6 +43,7 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services)
     {
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IPlaceTypesService, PlaceTypesService>();
         return services;
     }
 
@@ -109,6 +112,13 @@ public static class ServiceCollectionExtensions
                 IssuerSigningKey = new SymmetricSecurityKey(secretKeyInBytes)
             });
 
+        return services;
+    }
+
+    public static IServiceCollection AddMappings(
+        this IServiceCollection services)
+    {
+        services.AddAutoMapper([typeof(IAssemblyMarker).Assembly]);
         return services;
     }
 }
