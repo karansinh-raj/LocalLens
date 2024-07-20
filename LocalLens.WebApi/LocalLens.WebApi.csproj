@@ -11,4 +11,20 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Karan Raj\Local Lens Backend\LocalLens\LocalLens.WebApi\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="C:\Karan Raj\Local Lens Backend\LocalLens\LocalLens.WebApi\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Contracts\Auth\" />
+    <Folder Include="Contracts\Users\" />
+    <Folder Include="Contracts\Places\" />
+    <Folder Include="Controllers\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>
