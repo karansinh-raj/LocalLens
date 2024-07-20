@@ -7,14 +7,15 @@ namespace LocalLens.WebApi.Database;
 
 public class LocalLensDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 {
-    public LocalLensDbContext(DbContextOptions<LocalLensDbContext> options) : base(options)
-    {  
-    }
+	public LocalLensDbContext(DbContextOptions<LocalLensDbContext> options) : base(options)
+	{
+	}
 
-    protected override void OnModelCreating(ModelBuilder builder)
-    {
-        base.OnModelCreating(builder);
-    }
+	protected override void OnModelCreating(ModelBuilder builder)
+	{
+		base.OnModelCreating(builder);
+	}
 
-    public DbSet<PlaceType> PlaceTypes { get; set; }
+	public DbSet<PlaceType> PlaceTypes { get; set; }
+	public DbSet<Preference> Preferences { get; set; }
 }
