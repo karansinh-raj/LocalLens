@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using Amazon.S3;
+using FluentValidation;
 using FluentValidation.AspNetCore;
 using LocalLens.WebApi.Constants.Configurations;
 using LocalLens.WebApi.Database;
@@ -8,6 +9,7 @@ using LocalLens.WebApi.Services.PlacesTypes;
 using LocalLens.WebApi.Services.Preferences;
 using LocalLens.WebApi.Services.UserPreferences;
 using LocalLens.WebApi.Services.Questions;
+using LocalLens.WebApi.Services.UserDailyActivities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -50,6 +52,7 @@ public static class ServiceCollectionExtensions
 		services.AddScoped<IPreferencesService, PreferenceService>();
         services.AddScoped<IUserPreferencesService, UserPreferencesService>();
 		services.AddScoped<IQuestionsService, QuestionsService>();
+        services.AddScoped<IUserDailyActivityService, UserDailyActivityService>();
 
         return services;
 	}
