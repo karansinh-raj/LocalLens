@@ -5,6 +5,7 @@ using LocalLens.WebApi.Database;
 using LocalLens.WebApi.Entities;
 using LocalLens.WebApi.Services.Auth;
 using LocalLens.WebApi.Services.PlacesTypes;
+using LocalLens.WebApi.Services.Preferences;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -15,110 +16,112 @@ namespace LocalLens.WebApi.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddDependencies(
-        this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        services.AddContracts();
-        services.AddServices();
-        services.AddConfigurations(configuration);
-        services.AddDatabase(configuration);
-        services.AddJwtAuthenticationSettings(configuration);
-        services.AddMappings();
+	public static IServiceCollection AddDependencies(
+		this IServiceCollection services,
+		IConfiguration configuration)
+	{
+		services.AddContracts();
+		services.AddServices();
+		services.AddConfigurations(configuration);
+		services.AddDatabase(configuration);
+		services.AddJwtAuthenticationSettings(configuration);
+		services.AddMappings();
 
-        services.AddSwaggerDocumentation();
+		services.AddSwaggerDocumentation();
 
-        return services;
-    }
+		return services;
+	}
 
-    public static IServiceCollection AddContracts(
-        this IServiceCollection services)
-    {
-        services.AddFluentValidationAutoValidation();
-        services.AddValidatorsFromAssembly(typeof(IAssemblyMarker).Assembly);
-        return services;
-    }
+	public static IServiceCollection AddContracts(
+		this IServiceCollection services)
+	{
+		services.AddFluentValidationAutoValidation();
+		services.AddValidatorsFromAssembly(typeof(IAssemblyMarker).Assembly);
+		return services;
+	}
 
-    public static IServiceCollection AddServices(
-        this IServiceCollection services)
-    {
-        services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IPlaceTypesService, PlaceTypesService>();
-        return services;
-    }
+	public static IServiceCollection AddServices(
+		this IServiceCollection services)
+	{
+		services.AddScoped<IAuthService, AuthService>();
+		services.AddScoped<IPlaceTypesService, PlaceTypesService>();
+		services.AddScoped<IPreferencesService, PreferenceService>();
 
-    public static IServiceCollection AddConfigurations(
-        this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        services
-          .AddOptions<GoogleAuthConfig>()
-          .Bind(configuration.GetSection(GoogleAuthConfig.Key))
-          .ValidateDataAnnotations()
-          .ValidateOnStart();
+		return services;
+	}
 
-        services
-          .AddOptions<JwtConfig>()
-          .Bind(configuration.GetSection(JwtConfig.Key))
-          .ValidateDataAnnotations()
-          .ValidateOnStart();
+	public static IServiceCollection AddConfigurations(
+		this IServiceCollection services,
+		IConfiguration configuration)
+	{
+		services
+		  .AddOptions<GoogleAuthConfig>()
+		  .Bind(configuration.GetSection(GoogleAuthConfig.Key))
+		  .ValidateDataAnnotations()
+		  .ValidateOnStart();
 
-        return services;
-    }
+		services
+		  .AddOptions<JwtConfig>()
+		  .Bind(configuration.GetSection(JwtConfig.Key))
+		  .ValidateDataAnnotations()
+		  .ValidateOnStart();
 
-    public static IServiceCollection AddDatabase(
-        this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        services
-            .AddDbContext<LocalLensDbContext>(options =>
-                options.UseNpgsql(configuration.GetConnectionString("DatabaseConnection")));
+		return services;
+	}
+
+	public static IServiceCollection AddDatabase(
+		this IServiceCollection services,
+		IConfiguration configuration)
+	{
+		services
+			.AddDbContext<LocalLensDbContext>(options =>
+				options.UseNpgsql(configuration.GetConnectionString("DatabaseConnection")));
 
 
-        services
-            .AddIdentity<User, IdentityRole<Guid>>(options =>
-            {
-                options.User.RequireUniqueEmail = true;
-            })
-            .AddEntityFrameworkStores<LocalLensDbContext>()
-            .AddDefaultTokenProviders();
+		services
+			.AddIdentity<User, IdentityRole<Guid>>(options =>
+			{
+				options.User.RequireUniqueEmail = true;
+			})
+			.AddEntityFrameworkStores<LocalLensDbContext>()
+			.AddDefaultTokenProviders();
 
-        return services;
-    }
+		return services;
+	}
 
-    public static IServiceCollection AddJwtAuthenticationSettings(
-        this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        var jwtSettings = configuration.GetSection(JwtConfig.Key);
+	public static IServiceCollection AddJwtAuthenticationSettings(
+		this IServiceCollection services,
+		IConfiguration configuration)
+	{
+		var jwtSettings = configuration.GetSection(JwtConfig.Key);
 
-        var secretKeyInString = jwtSettings["SecretKey"];
-        var secretKeyInBytes = Encoding.ASCII.GetBytes(secretKeyInString!);
+		var secretKeyInString = jwtSettings["SecretKey"];
+		var secretKeyInBytes = Encoding.ASCII.GetBytes(secretKeyInString!);
 
-        services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-        .AddJwtBearer(options =>
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtSettings["Issuer"],
-                ValidAudience = jwtSettings["Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(secretKeyInBytes)
-            });
+		services.AddAuthentication(options =>
+		{
+			options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+			options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+		})
+		.AddJwtBearer(options =>
+			options.TokenValidationParameters = new TokenValidationParameters
+			{
+				ValidateIssuer = true,
+				ValidateAudience = true,
+				ValidateLifetime = true,
+				ValidateIssuerSigningKey = true,
+				ValidIssuer = jwtSettings["Issuer"],
+				ValidAudience = jwtSettings["Audience"],
+				IssuerSigningKey = new SymmetricSecurityKey(secretKeyInBytes)
+			});
 
-        return services;
-    }
+		return services;
+	}
 
-    public static IServiceCollection AddMappings(
-        this IServiceCollection services)
-    {
-        services.AddAutoMapper([typeof(IAssemblyMarker).Assembly]);
-        return services;
-    }
+	public static IServiceCollection AddMappings(
+		this IServiceCollection services)
+	{
+		services.AddAutoMapper([typeof(IAssemblyMarker).Assembly]);
+		return services;
+	}
 }
