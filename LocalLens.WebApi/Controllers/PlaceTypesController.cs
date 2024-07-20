@@ -1,5 +1,6 @@
 ﻿using LocalLens.WebApi.ResultPattern;
 using LocalLens.WebApi.Services.PlacesTypes;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LocalLens.WebApi.Controllers;
@@ -16,6 +17,7 @@ public class PlaceTypesController : BaseController
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GoogleLoginAsync(
         CancellationToken ct)
     {

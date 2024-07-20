@@ -1,4 +1,5 @@
-﻿using Google.Apis.Auth;
+﻿using AutoMapper;
+using Google.Apis.Auth;
 using LocalLens.WebApi.Constants.Configurations;
 using LocalLens.WebApi.Contracts.Auth;
 using LocalLens.WebApi.Database;
@@ -20,6 +21,7 @@ public class AuthService : IAuthService
     private readonly ILogger<AuthService> _logger;
     private readonly LocalLensDbContext _dbContext;
     private readonly UserManager<User> _userManager;
+    private readonly IMapper _mapper;
     private readonly GoogleAuthConfig _googleAuthConfig;
     private readonly JwtConfig _jwtConfig;
 
@@ -28,11 +30,13 @@ public class AuthService : IAuthService
         IOptions<GoogleAuthConfig> googleAuthConfig,
         IOptions<JwtConfig> jwtConfig,
         LocalLensDbContext dbContext,
-        UserManager<User> userManager)
+        UserManager<User> userManager,
+        IMapper mapper)
     {
         _logger = logger;
         _dbContext = dbContext;
         _userManager = userManager;
+        _mapper = mapper;
         _googleAuthConfig = googleAuthConfig.Value;
         _jwtConfig = jwtConfig.Value;
     }
@@ -159,4 +163,64 @@ public class AuthService : IAuthService
            new Claim(JwtRegisteredClaimNames.Email, user.Email!.ToString()),
            new Claim(JwtRegisteredClaimNames.GivenName, user.FirstName.ToString()),
        ];
+
+    public async Task<ResultT<string>> UpdateProfileAsync(
+        UpdateUserRequest request,
+        Guid userId,
+        CancellationToken ct)
+    {
+        var existingUser = await _userManager.FindByIdAsync(userId.ToString());
+        if (existingUser == null)
+        {
+            return AuthErrors.UserNotFound;
+        }
+
+        _mapper.Map(request, existingUser);
+        existingUser.UpdatedOnUtc = DateTime.UtcNow;
+        _dbContext.Users.Update(existingUser);
+        var resultOfUpdateUser = await _dbContext.SaveChangesAsync(ct);
+
+        if (resultOfUpdateUser > 0)
+        {
+            return (AuthMessages.UserUpdateSuccess, AuthMessages.UserUpdateSuccess);
+        }
+
+        return AuthErrors.UserUpdateFailure;
+    }
+
+    public async Task<ResultT<string>> DeleteProfileAsync(
+        Guid userId,
+        CancellationToken ct)
+    {
+        var existingUser = await _userManager.FindByIdAsync(userId.ToString());
+        if (existingUser == null)
+        {
+            return AuthErrors.UserNotFound;
+        }
+
+        existingUser.DeletedOnUtc = DateTime.UtcNow;
+        existingUser.IsDeleted = true;
+
+        _dbContext.Users.Update(existingUser);
+        var resultOfUpdateUser = await _dbContext.SaveChangesAsync(ct);
+
+        if (resultOfUpdateUser > 0)
+        {
+            return (AuthMessages.UserDeleteSuccess, AuthMessages.UserDeleteSuccess);
+        }
+
+        return AuthErrors.UserDeleteFailure;
+    }
+
+    public async Task<ResultT<UserDetailsResponse>> GetProfileAsync(
+        Guid userId,
+        CancellationToken ct)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null)
+        {
+            return AuthErrors.UserNotFound;
+        }
+        return (_mapper.Map<UserDetailsResponse>(user), AuthMessages.UserFetchedSuccess);
+    }
 }
