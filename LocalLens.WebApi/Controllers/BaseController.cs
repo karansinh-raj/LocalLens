@@ -1,4 +1,4 @@
-﻿using LocalLens.WebApi.Result;
+﻿using LocalLens.WebApi.ResultPattern;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LocalLens.WebApi.Controllers;

@@ -1,10 +1,11 @@
 ﻿using LocalLens.WebApi.Contracts.Auth;
-using LocalLens.WebApi.Result;
+using LocalLens.WebApi.ResultPattern;
 using LocalLens.WebApi.Services.Auth;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LocalLens.WebApi.Controllers;
 
+[Route("auth")]
 public class AuthController : BaseController
 {
     private readonly IAuthService _authService;
@@ -15,24 +16,15 @@ public class AuthController : BaseController
         _authService = authService;
     }
 
-    [HttpGet("hi")]
-    public async Task<IActionResult> Get(CancellationToken ct)
+    [HttpPost("google-login")]
+    public async Task<IActionResult> GoogleLoginAsync(
+        GoogleLoginRequest request, 
+        CancellationToken ct)
     {
-        var result = await _authService.Get();
-        return result.Match(Ok, Problem);
-    }
+        var result = await _authService.GoogleLoginAsync(request, ct);
 
-    [HttpGet("hi1")]
-    public async Task<IActionResult> Get1(CancellationToken ct)
-    {
-        var result = await _authService.Get1();
-        return result.Match(Ok, Problem);
-    }
-
-    [HttpPost("hi1")]
-    public async Task<IActionResult> Get1(GoogleLoginRequest request, CancellationToken ct)
-    {
-        var result = await _authService.Get1();
-        return result.Match(Ok, Problem);
+        return result.Match(
+            Ok,
+            Problem);
     }
 }

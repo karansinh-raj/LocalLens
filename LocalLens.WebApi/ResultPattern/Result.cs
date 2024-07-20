@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LocalLens.WebApi.Result;
+namespace LocalLens.WebApi.ResultPattern;
 
 public class Result
 {

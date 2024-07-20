@@ -1,4 +1,4 @@
-﻿namespace LocalLens.WebApi.Result;
+﻿namespace LocalLens.WebApi.ResultPattern;
 
 public class ResultT<TValue> : Result
 {
