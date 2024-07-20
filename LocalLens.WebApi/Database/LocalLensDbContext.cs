@@ -18,4 +18,7 @@ public class LocalLensDbContext : IdentityDbContext<User, IdentityRole<Guid>, Gu
 
 	public DbSet<PlaceType> PlaceTypes { get; set; }
 	public DbSet<Preference> Preferences { get; set; }
+	public DbSet<Question> Questions { get; set; }
+	public DbSet<Option> Options { get; set; }
+
 }
