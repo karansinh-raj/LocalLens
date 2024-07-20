@@ -6,6 +6,7 @@ using LocalLens.WebApi.Entities;
 using LocalLens.WebApi.Services.Auth;
 using LocalLens.WebApi.Services.PlacesTypes;
 using LocalLens.WebApi.Services.Preferences;
+using LocalLens.WebApi.Services.Questions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +47,7 @@ public static class ServiceCollectionExtensions
 		services.AddScoped<IAuthService, AuthService>();
 		services.AddScoped<IPlaceTypesService, PlaceTypesService>();
 		services.AddScoped<IPreferencesService, PreferenceService>();
+		services.AddScoped<IQuestionsService, QuestionsService>();
 
 		return services;
 	}
