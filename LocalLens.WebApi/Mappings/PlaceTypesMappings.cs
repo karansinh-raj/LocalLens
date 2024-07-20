@@ -4,9 +4,9 @@ using LocalLens.WebApi.Entities;
 
 namespace LocalLens.WebApi.Mappings;
 
-public class PlaceTypesMappings : Profile
+public class PlaceTypeMappings : Profile
 {
-    public PlaceTypesMappings()
+    public PlaceTypeMappings()
     {
         CreateMap<PlaceType, PlaceTypeResponse>()
             .ReverseMap();

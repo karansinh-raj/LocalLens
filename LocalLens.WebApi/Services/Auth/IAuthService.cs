@@ -8,4 +8,17 @@ public interface IAuthService : IBaseService
     Task<ResultT<GoogleLoginResponse>> GoogleLoginAsync(
         GoogleLoginRequest request,
         CancellationToken ct);
+
+    Task<ResultT<string>> UpdateProfileAsync(
+        UpdateUserRequest request,
+        Guid userId,
+        CancellationToken ct);
+
+    Task<ResultT<string>> DeleteProfileAsync(
+        Guid userId,
+        CancellationToken ct);
+
+    Task<ResultT<UserDetailsResponse>> GetProfileAsync(
+        Guid userId,
+        CancellationToken ct);
 }

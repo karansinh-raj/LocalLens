@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
-using Google;
 using LocalLens.WebApi.Constants.Configurations;
 using LocalLens.WebApi.Database;
 using LocalLens.WebApi.Entities;
@@ -9,7 +8,6 @@ using LocalLens.WebApi.Services.PlacesTypes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -27,6 +25,8 @@ public static class ServiceCollectionExtensions
         services.AddDatabase(configuration);
         services.AddJwtAuthenticationSettings(configuration);
         services.AddMappings();
+
+        services.AddSwaggerDocumentation();
 
         return services;
     }
