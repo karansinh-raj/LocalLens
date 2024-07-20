@@ -58,12 +58,12 @@ public class AuthService : IAuthService
         var resultOfCreateUser = await
             CreateUserIfNotExists(userId, userInfo.Email, userInfo.FirstName, userInfo.LastName, userInfo.ProfileUrl);
 
-        if (!resultOfCreateUser)
+        if (!resultOfCreateUser.Item1)
         {
             return AuthErrors.UserCreateFailure;
         }
 
-        var claims = GetClaims(userInfo, userId);
+        var claims = GetClaims(userInfo, resultOfCreateUser.Item2.Id);
         var (accessToken, accessTokenExpiry) = GenerateAccessToken(claims);
 
         var response = new GoogleLoginResponse
@@ -101,7 +101,7 @@ public class AuthService : IAuthService
         }
     }
 
-    private async Task<bool> CreateUserIfNotExists(
+    private async Task<(bool, User)> CreateUserIfNotExists(
         Guid userId,
         string email,
         string firstName,
@@ -111,7 +111,7 @@ public class AuthService : IAuthService
         var userFromDb = await _userManager.FindByEmailAsync(email);
         if (userFromDb is not null)
         {
-            return await Task.FromResult(true);
+            return await Task.FromResult((true, userFromDb));
         }
 
         var user = new User
@@ -130,7 +130,7 @@ public class AuthService : IAuthService
 
         await _dbContext.Users.AddAsync(user);
         var resultOfCreateUser = await _dbContext.SaveChangesAsync();
-        return resultOfCreateUser > 0;
+        return (resultOfCreateUser > 0, user);
     }
 
     private (string, DateTime) GenerateAccessToken(
