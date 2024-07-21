@@ -1,9 +1,7 @@
-﻿using LocalLens.WebApi.Contracts.UserPreferences;
-using LocalLens.WebApi.Contracts.UserQuestions;
+﻿using LocalLens.WebApi.Contracts.UserQuestions;
 using LocalLens.WebApi.DependencyInjection;
 using LocalLens.WebApi.ResultPattern;
 using LocalLens.WebApi.Services.Questions;
-using LocalLens.WebApi.Services.UserPreferences;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,18 +21,30 @@ namespace LocalLens.WebApi.Controllers
 				Problem);
 		}
 
-        [HttpPost("/questions/user")]
-        [Authorize]
-        public async Task<IActionResult> CreateUserQuestionAsync(
-        CreateUserQuestionsRequest request,
-            CancellationToken ct)
-        {
-            var userId = User.GetUserId();
-            var result = await questionsService.CreateUserQuestionsAsync(request, userId, ct);
+		[HttpPost("/questions/user")]
+		[Authorize]
+		public async Task<IActionResult> CreateUserQuestionAsync(
+		CreateUserQuestionsRequest request,
+			CancellationToken ct)
+		{
+			var userId = User.GetUserId();
+			var result = await questionsService.CreateUserQuestionsAsync(request, userId, ct);
 
-            return result.Match(
-                Ok,
-                Problem);
-        }
-    }
+			return result.Match(
+				Ok,
+				Problem);
+		}
+
+		[HttpGet("selected")]
+		[Authorize]
+		public async Task<IActionResult> GetAllSelectedQuestionsAsync(CancellationToken ct)
+		{
+			var userId = User.GetUserId();
+			var result = await questionsService.GetAllSelectedQuestionsAsync(userId, ct);
+
+			return result.Match(
+				Ok,
+				Problem);
+		}
+	}
 }

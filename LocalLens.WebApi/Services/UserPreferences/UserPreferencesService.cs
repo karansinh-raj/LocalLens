@@ -1,4 +1,5 @@
-﻿using LocalLens.WebApi.Contracts.UserPreferences;
+﻿using AutoMapper;
+using LocalLens.WebApi.Contracts.UserPreferences;
 using LocalLens.WebApi.Database;
 using LocalLens.WebApi.Entities;
 using LocalLens.WebApi.Errors.UserPreferences;
@@ -10,30 +11,32 @@ namespace LocalLens.WebApi.Services.UserPreferences;
 
 public class UserPreferencesService : IUserPreferencesService
 {
-    private readonly LocalLensDbContext _dbContext;
+	private readonly LocalLensDbContext _dbContext;
+	private readonly IMapper _mapper;
 
-    public UserPreferencesService(
-        LocalLensDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
+	public UserPreferencesService(
+		LocalLensDbContext dbContext, IMapper mapper)
+	{
+		_dbContext = dbContext;
+		_mapper = mapper;
+	}
 
-    public async Task<ResultT<string>> CreateUserPreferencesAsync(
-        CreateUserPreferecesRequest request, 
-        Guid userId, 
-        CancellationToken ct)
-    {
-        var user = await _dbContext.Users.FindAsync(userId);
-        if (user == null) 
-        {
-            return UserPreferencesErrors.UserNotFound;
-        }
+	public async Task<ResultT<string>> CreateUserPreferencesAsync(
+		CreateUserPreferecesRequest request,
+		Guid userId,
+		CancellationToken ct)
+	{
+		var user = await _dbContext.Users.FindAsync(userId);
+		if (user == null)
+		{
+			return UserPreferencesErrors.UserNotFound;
+		}
 
-        var preferences = await
-            _dbContext
-            .Preferences
-            .Where(x => request.Preferences.Contains(x.Id))
-            .ToListAsync();
+		var preferences = await
+			_dbContext
+			.Preferences
+			.Where(x => request.Preferences.Contains(x.Id))
+			.ToListAsync();
 
         var existingUserPreferences = await 
             _dbContext
@@ -60,13 +63,27 @@ public class UserPreferencesService : IUserPreferencesService
                 IsDeleted = false
             }).ToList();
 
-        await _dbContext.UserPreferences.AddRangeAsync(userPreferences);
-        var resultOfInsert = await _dbContext.SaveChangesAsync();
+		await _dbContext.UserPreferences.AddRangeAsync(userPreferences);
+		var resultOfInsert = await _dbContext.SaveChangesAsync();
 
-        if (resultOfInsert > 0)
-        {
-            return (UserPreferencesMessages.UserPreferencesCreated, UserPreferencesMessages.UserPreferencesCreated);
-        }
-        return UserPreferencesErrors.UserPreferencesCreateFailure;
-    }
+		if (resultOfInsert > 0)
+		{
+			return (UserPreferencesMessages.UserPreferencesCreated, UserPreferencesMessages.UserPreferencesCreated);
+		}
+		return UserPreferencesErrors.UserPreferencesCreateFailure;
+	}
+
+	public async Task<ResultT<IEnumerable<UserPreferencesResponse>>> GetAllSelectedPreferencesAsync(
+		Guid userId,
+		CancellationToken ct)
+	{
+		var preferences = await
+		_dbContext.
+		UserPreferences
+		.Include(m => m.Preference).Where(up => up.UserId == userId)
+		.ToListAsync();
+
+		var selectedPreferenceResponse = _mapper.Map<IEnumerable<UserPreferencesResponse>>(preferences);
+		return (selectedPreferenceResponse, UserPreferencesMessages.SelectedPreferencesFetchSuccess);
+	}
 }

@@ -25,19 +25,31 @@ namespace LocalLens.WebApi.Controllers
 				Problem);
 		}
 
-        [HttpPost("/preferences/user")]
-        [Authorize]
-        public async Task<IActionResult> CreateUserPreferencesAsync(
+		[HttpGet("selected")]
+		[Authorize]
+		public async Task<IActionResult> GetAllSelectedPreferencesAsync(CancellationToken ct)
+		{
+			var userId = User.GetUserId();
+			var result = await userPreferencesService.GetAllSelectedPreferencesAsync(userId, ct);
+
+			return result.Match(
+				Ok,
+				Problem);
+		}
+
+		[HttpPost("/preferences/user")]
+		[Authorize]
+		public async Task<IActionResult> CreateUserPreferencesAsync(
 			CreateUserPreferecesRequest request,
 			CancellationToken ct)
-        {
+		{
 			var userId = User.GetUserId();
-            var result = await userPreferencesService.CreateUserPreferencesAsync(request, userId, ct);
+			var result = await userPreferencesService.CreateUserPreferencesAsync(request, userId, ct);
 
-            return result.Match(
-                Ok,
-                Problem);
-        }
-    }
+			return result.Match(
+				Ok,
+				Problem);
+		}
+	}
 }
 

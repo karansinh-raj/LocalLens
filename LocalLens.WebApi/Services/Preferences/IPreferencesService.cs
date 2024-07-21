@@ -7,4 +7,5 @@ public interface IPreferencesService
 {
 	Task<ResultT<IEnumerable<PreferenceResponse>>> GetAllPreferencesAsync(CancellationToken ct);
 
+
 }
