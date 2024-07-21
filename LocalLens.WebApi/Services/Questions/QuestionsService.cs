@@ -53,10 +53,10 @@ namespace LocalLens.WebApi.Services.Questions
             .UserQuestions
             .Where(up => up.UserId == userId).ToListAsync();
 
-                foreach (var userQuestion in existingUserQuestions)
-                {
-                userQuestion.IsDeleted = true;
-                }
+            foreach (var userQuestion in existingUserQuestions)
+            {
+				userQuestion.IsDeleted = true;
+            }
 
             _dbContext.UpdateRange(existingUserQuestions);
 
@@ -90,9 +90,9 @@ namespace LocalLens.WebApi.Services.Questions
 			var questions = await
 			_dbContext
 			.UserQuestions
-			.Include(m => m.Question)
-			.Include(m => m.Option)
 			.Where(up => up.UserId == userId && up.IsDeleted == false)
+            .Include(m => m.Question)
+			.Include(m => m.Option)
 			.ToListAsync();
 
 			var groupedQuestions = questions
