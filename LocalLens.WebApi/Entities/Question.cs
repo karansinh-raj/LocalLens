@@ -7,5 +7,6 @@ public class Question : BaseEntity
 	public required string Text { get; set; }
 	public bool IsMultiChoice { get; set; }
 	public bool IsDropDown { get; set; }
+	public int QuestionOrder { get; set; }
 	public ICollection<Option> Options { get; set; } = [];
 }

@@ -19,6 +19,7 @@ namespace LocalLens.WebApi.Services.Questions
 			var questions = await
 				_dbContext
 				.Questions.Include(m => m.Options)
+				.OrderBy(x => x.QuestionOrder)
 				.ToListAsync();
 
 			var questionsResponse = _mapper.Map<IEnumerable<QuestionOptions>>(questions);
