@@ -2,7 +2,16 @@
 
 public class PlaceResponse
 {
-    public string Name { get; set; }
-    public double Latitude { get; set; }
-    public double Longitude { get; set; }
+    public string location_name { get; set; }
+    public string opening_hours { get; set; }
+    public string place_name { get; set; }
+    public List<string> facilities { get; set; }
+    public string about_place { get; set; }
+    public List<string> feature_list { get; set; }
+    public string reason { get; set; }
+    public string place_image { get; set; }
+
+    public double latitude { get; set; }
+    public double longitude { get; set; }
+
 }

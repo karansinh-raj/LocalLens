@@ -1,6 +1,10 @@
-﻿namespace LocalLens.WebApi.Services.Places;
+﻿using LocalLens.WebApi.Contracts.Places;
+
+namespace LocalLens.WebApi.Services.Places;
 
 public interface IPlacesService
 {
-    Task<string?> GetChatResponseAsync();
+    Task<List<PlaceResponse>> GetChatResponseAsync(
+        Guid userId,
+        CancellationToken ct);
 }
