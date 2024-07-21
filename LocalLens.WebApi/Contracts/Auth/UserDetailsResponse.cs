@@ -9,4 +9,5 @@ public class UserDetailsResponse
     public string? ProfileUrl { get; set; }
     public string Email { get; set; }
     public LoginProvider LoginProvider { get; set; }
+    public bool IsPreferencesCompleted { get; set; }
 }
