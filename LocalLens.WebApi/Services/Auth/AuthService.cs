@@ -69,18 +69,13 @@ public class AuthService : IAuthService
             return AuthErrors.UserCreateFailure;
         }
 
-        var isUserPreferencesCompleted = await _dbContext
-            .UserPreferences
-            .AnyAsync(x => x.UserId == userId);
-
         var claims = GetClaims(userInfo, resultOfCreateUser.Item2.Id);
         var (accessToken, accessTokenExpiry) = GenerateAccessToken(claims);
 
         var response = new GoogleLoginResponse
         {
             AccessToken = accessToken,
-            ExpiryTimeUtc = accessTokenExpiry,
-            IsPreferencesCompleted = isUserPreferencesCompleted
+            ExpiryTimeUtc = accessTokenExpiry
         };
 
         return (response, AuthMessages.LoginSuccess);
@@ -232,6 +227,14 @@ public class AuthService : IAuthService
         {
             return AuthErrors.UserNotFound;
         }
-        return (_mapper.Map<UserDetailsResponse>(user), AuthMessages.UserFetchedSuccess);
+
+        var isUserPreferencesCompleted = await _dbContext
+        .UserPreferences
+        .AnyAsync(x => x.UserId == userId);
+
+        var response = _mapper.Map<UserDetailsResponse>(user);
+        response.IsPreferencesCompleted = isUserPreferencesCompleted;
+
+        return (response, AuthMessages.UserFetchedSuccess);
     }
 }
