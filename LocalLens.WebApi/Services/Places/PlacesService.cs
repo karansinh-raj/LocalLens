@@ -30,36 +30,25 @@ public class PlacesService : IPlacesService
             .Select(x => x.Preference.PlaceName)
             .ToListAsync();
 
-        var questions = await _dbContext
-            .UserQuestions
-            .Include(x => x.Question)
-            .Include(x => x.Option)
-            .Where(x => x.UserId == userId)
-            .Select(x => new
-            {
-                QuestionText = x.Question.Text,
-                OptionText = x.Option.Text
-            })
-        .ToListAsync();
-
         var preferencesString = string.Join(", ", preferences);
-        var questionsString = string.Join(", ", questions.Select(q => $"{q.QuestionText}: {q.OptionText}"));
 
         string prompt = $"""
-        I am creating an AI-driven recommendation app that provides personalized suggestions for locations based on user preferences.
-        Please select the area of 'Ahemdabad' for searching locations.
-        Please provide a list of locations in JSON format, where each location includes the following details:
-        location name
-        opening hours (e.g., ""8 AM to 7 PM"")
-        place name
-        latitude
-        longitude
-        facilities (list)
-        about place (short description)
-        feature list
-        reason (why this place is suggested, based on Google reviews)
-        Below is a list of user preferences: {preferencesString}
-        Below is the list of questions and answers for the other preferences: {questionsString}
+        I am creating an AI-driven recommendation app that provides personalized suggestions for locations based on user preferences. 
+        For the area of 'Ahmedabad', I am specifically looking for business-related places such as hotels, PG accommodations, hospitals, and restaurants.
+        Please provide a list of locations in JSON format. Each location should include the following details:
+        Location name
+        Opening hours
+        Place name
+        Latitude
+        Longitude
+        Facilities (list)
+        About place (short description)
+        Feature list
+        Reason (why this place is suggested, based on Google reviews)
+        Here is the list of user preferences: {preferencesString}
+        Please make sure that location name, place name and Latitude, Longitude should not be null. 
+        Please ensure the suggestions align with the user's interest in business-related places. 
+        Provide at least 7 items if possible.
         Please respond with atleast 7 items if possible
         """;
 
