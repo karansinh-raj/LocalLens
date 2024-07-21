@@ -1,4 +1,6 @@
-﻿using LocalLens.WebApi.Services.Places;
+﻿using LocalLens.WebApi.DependencyInjection;
+using LocalLens.WebApi.Services.Places;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LocalLens.WebApi.Controllers;
@@ -14,17 +16,12 @@ public class PlacesController : BaseController
     }
 
 
-    //[HttpGet]
-    //public async Task<IActionResult> GetPlaces()
-    //{
-    //    var response = await _placesService.GetChatResponseAsync();
-    //    var places = ParseResponseToPlaces(response);
-
-    //    return Ok(places);
-    //}
-
-    //private List<PlaceResponse> ParseResponseToPlaces(string response)
-    //{
-    //    return JsonConvert.DeserializeObject<List<PlaceResponse>>(response);
-    //}
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> GetPlaces(CancellationToken ct)
+    {
+        var userId = User.GetUserId();
+        var response = await _placesService.GetChatResponseAsync(userId, ct);
+        return Ok(response);
+    }
 }

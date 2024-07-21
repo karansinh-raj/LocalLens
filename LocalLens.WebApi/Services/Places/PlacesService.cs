@@ -1,73 +1,89 @@
-﻿using OpenAI_API;
-using OpenAI_API.Chat;
-using OpenAI_API.Completions;
+﻿using LocalLens.WebApi.Contracts.Places;
+using LocalLens.WebApi.Database;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using OpenAI_API;
 
 namespace LocalLens.WebApi.Services.Places;
 
 public class PlacesService : IPlacesService
 {
     private readonly OpenAIAPI _api;
+    private readonly LocalLensDbContext _dbContext;
 
-    public PlacesService(OpenAIAPI api)
+    public PlacesService(
+        OpenAIAPI api,
+        LocalLensDbContext dbContext)
     {
         _api = api;
+        _dbContext = dbContext;
     }
 
-    public async Task<string?> GetChatResponseAsync()
+    public async Task<List<PlaceResponse>> GetChatResponseAsync(
+        Guid userId, 
+        CancellationToken ct)
     {
-        string prompt = @"""
-        I am suggesting places to users based on there preferences and questions answer.
+        var preferences = await _dbContext
+            .UserPreferences
+            .Include(x => x.Preference)
+            .Where(x => x.UserId == userId)
+            .Select(x => x.Preference.PlaceName)
+            .ToListAsync();
 
-        preferences are:
-        hospital, physiotherapist, movie_theater
-
-        Questions are: 
-
-        ""How important is it for you to live near a hospital or medical center?"" : User answer => ""Very Important""
-        ""Do you have specific cuisine preferences for nearby dining options?"" : User answer => """"Yes""
-
-        Give me response in the format of List of objects represented below 
-        [
+        var questions = await _dbContext
+            .UserQuestions
+            .Include(x => x.Question)
+            .Include(x => x.Option)
+            .Where(x => x.UserId == userId)
+            .Select(x => new
             {
-                ""type"": """",
-                ""name"": """",
-                ""latitude"": ,
-                ""longitude"": 
-            }
-        ]
-        Please give me atleast list of 10 items
+                QuestionText = x.Question.Text,
+                OptionText = x.Option.Text
+            })
+        .ToListAsync();
+
+        var preferencesString = string.Join(", ", preferences);
+        var questionsString = string.Join(", ", questions.Select(q => $"{q.QuestionText}: {q.OptionText}"));
+
+        string prompt = $"""
+        I am creating an AI-driven recommendation app that provides personalized suggestions for locations based on user preferences.
+        Please select the area of 'Ahemdabad' for searching locations.
+        Please provide a list of locations in JSON format, where each location includes the following details:
+        location name
+        opening hours (e.g., ""8 AM to 7 PM"")
+        place name
+        latitude
+        longitude
+        facilities (list)
+        about place (short description)
+        feature list
+        reason (why this place is suggested, based on Google reviews)
+        Below is a list of user preferences: {preferencesString}
+        Below is the list of questions and answers for the other preferences: {questionsString}
+        Please respond with atleast 7 items if possible
         """;
 
         var conversation = _api.Chat.CreateConversation();
         conversation.AppendUserInput(prompt);
-        var response = await conversation.GetResponseFromChatbot();
+        var response = await conversation.GetResponseFromChatbotAsync();
 
-        return response;
+        var result = ParseResponseToPlaces(response);
+        return result;
+    }
 
-        //var chatRequest = new ChatRequest
-        //{
-        //    Model = "gpt-3.5-turbo", // Specify the model here
-        //    Messages = new List<ChatMessage>
-        //    {
-        //        new ChatMessage
-        //        {
-        //            Content = prompt
-        //        }
-        //    },
-        //    MaxTokens = 100,
-        //    Temperature = 0.7
-        //};
-
-        //var completionRequest = new CompletionRequest(prompt model: "gpt-3.5-turbo");
-        //var completionResult = await _api.Chat.CreateChatCompletionAsync(chatRequest);
-
-        //if (completionResult.Choices.Count > 0)
-        //{
-        //    return completionResult.Choices[0].Message.Content;
-        //}
-        //else
-        //{
-        //    return null;
-        //}
+    private static List<PlaceResponse> ParseResponseToPlaces(string response)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(response))
+            {
+                return [];
+            }
+            return JsonConvert.DeserializeObject<List<PlaceResponse>>(response) ?? [];
+        }
+        catch (Exception ex)
+        {
+            return [];
+        }
     }
 }
