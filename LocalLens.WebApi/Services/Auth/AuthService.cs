@@ -58,6 +58,11 @@ public class AuthService : IAuthService
         var resultOfCreateUser = await
             CreateUserIfNotExists(userId, userInfo.Email, userInfo.FirstName, userInfo.LastName, userInfo.ProfileUrl);
 
+        if (resultOfCreateUser.Item1 && resultOfCreateUser.Item2.IsDeleted == true)
+        {
+            return AuthErrors.UserAccountDeleted;
+        }
+
         if (!resultOfCreateUser.Item1)
         {
             return AuthErrors.UserCreateFailure;

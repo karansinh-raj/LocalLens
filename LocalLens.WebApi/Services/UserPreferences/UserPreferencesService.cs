@@ -38,11 +38,17 @@ public class UserPreferencesService : IUserPreferencesService
         var existingUserPreferences = await 
             _dbContext
             .UserPreferences
-            .Where(up => up.UserId == userId && preferences.Select(p => p.Id).Contains(up.PreferenceId))
-            .ToListAsync();
+            .Where(up => up.UserId == userId).ToListAsync();
+
+        foreach (var userPreference in existingUserPreferences)
+        {
+            userPreference.IsDeleted = true;
+        }
+
+        _dbContext.UpdateRange(existingUserPreferences);
 
         var userPreferences = preferences
-            .Where(p => !existingUserPreferences.Any(eup => eup.PreferenceId == p.Id))
+           // .Where(p => !existingUserPreferences.Any(eup => eup.PreferenceId == p.Id))
             .Select(p => new UserPreference
             {
                 Id = Guid.NewGuid(),

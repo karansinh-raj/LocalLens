@@ -15,6 +15,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using OpenAI_API;
+using LocalLens.WebApi.Services.Places;
+using LocalLens.WebApi.Services.UserPredicatedPlaces;
 
 namespace LocalLens.WebApi.DependencyInjection;
 
@@ -30,10 +33,10 @@ public static class ServiceCollectionExtensions
 		services.AddDatabase(configuration);
 		services.AddJwtAuthenticationSettings(configuration);
 		services.AddMappings();
+		services.AddHttpClients(configuration);
 
 		services.AddSwaggerDocumentation();
-
-		return services;
+        return services;
 	}
 
 	public static IServiceCollection AddContracts(
@@ -53,6 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserPreferencesService, UserPreferencesService>();
 		services.AddScoped<IQuestionsService, QuestionsService>();
         services.AddScoped<IUserDailyActivityService, UserDailyActivityService>();
+        services.AddScoped<IPlacesService, PlacesService>();
 
         return services;
 	}
@@ -131,4 +135,29 @@ public static class ServiceCollectionExtensions
 		services.AddAutoMapper([typeof(IAssemblyMarker).Assembly]);
 		return services;
 	}
+
+    public static IServiceCollection AddHttpClients(
+        this IServiceCollection services,
+		IConfiguration configuration)
+    {
+        services.AddHttpClient<IUserPredicatedPlaces, UserPredicatedPlaces>(client =>
+        {
+			var baseUrl = configuration["PlacesApiBaseUrl"];
+            client.BaseAddress = new Uri(baseUrl!);
+        });
+        return services;
+    }
+
+    //  public static WebApplicationBuilder AddOpenAIChatGPT(
+    //this WebApplicationBuilder builder, 
+    //IConfiguration configuration)
+    //  {
+    //      var chatGptKey = configuration["OpenAIChatGpt:Key"];
+
+    //      var chat = new OpenAIAPI(chatGptKey);
+
+    //      builder.Services.AddSingleton(chat);
+
+    //      return builder;
+    //  }
 }

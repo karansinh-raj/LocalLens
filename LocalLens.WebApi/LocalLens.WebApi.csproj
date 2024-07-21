@@ -28,6 +28,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
+    <PackageReference Include="OpenAI" Version="1.11.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
@@ -41,7 +42,6 @@
 
   <ItemGroup>
     <Folder Include="Contracts\Users\" />
-    <Folder Include="Contracts\Places\" />
   </ItemGroup>
 
 </Project>

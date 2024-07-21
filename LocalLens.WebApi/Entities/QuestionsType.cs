@@ -2,7 +2,6 @@
 
 public enum QuestionsType
 {
-
 	Hospital = 1,
 	Restaurant = 2,
 	TouristAttraction = 3,
