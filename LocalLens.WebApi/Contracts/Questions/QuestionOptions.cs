@@ -7,6 +7,8 @@ namespace LocalLens.WebApi.Contracts.Questions
 		public Guid Id { get; set; }
 		public required string Text { get; set; }
 		public QuestionsType Type { get; set; }
+		public bool IsMultiChoice { get; set; }
+		public bool IsDropDown { get; set; }
 		public required List<OptionResponse> Options { get; set; }
 	}
 }

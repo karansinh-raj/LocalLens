@@ -48,6 +48,18 @@ namespace LocalLens.WebApi.Services.Questions
                 .Where(o => optionIds.Contains(o.Id))
                 .ToDictionaryAsync(o => o.Id, o => o);
 
+            var existingUserQuestions = await
+            _dbContext
+            .UserQuestions
+            .Where(up => up.UserId == userId).ToListAsync();
+
+                foreach (var userQuestion in existingUserQuestions)
+                {
+                userQuestion.IsDeleted = true;
+                }
+
+            _dbContext.UpdateRange(existingUserQuestions);
+
             var userQuestions = request.QuestionsAndOptions
                 .Select(qo => new UserQuestion
                 {
