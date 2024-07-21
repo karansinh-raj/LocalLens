@@ -88,11 +88,11 @@ namespace LocalLens.WebApi.Services.Questions
 		public async Task<ResultT<IEnumerable<UserQuestionsResponse>>> GetAllSelectedQuestionsAsync(Guid userId, CancellationToken ct)
 		{
 			var questions = await
-			_dbContext.
-			UserQuestions
+			_dbContext
+			.UserQuestions
 			.Include(m => m.Question)
 			.Include(m => m.Option)
-			.Where(up => up.UserId == userId)
+			.Where(up => up.UserId == userId && up.IsDeleted == false)
 			.ToListAsync();
 
 			var groupedQuestions = questions

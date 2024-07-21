@@ -78,9 +78,10 @@ public class UserPreferencesService : IUserPreferencesService
 		CancellationToken ct)
 	{
 		var preferences = await
-		_dbContext.
-		UserPreferences
-		.Include(m => m.Preference).Where(up => up.UserId == userId)
+		_dbContext
+		.UserPreferences
+		.Include(m => m.Preference)
+		.Where(up => up.UserId == userId && up.IsDeleted == false)
 		.ToListAsync();
 
 		var selectedPreferenceResponse = _mapper.Map<IEnumerable<UserPreferencesResponse>>(preferences);

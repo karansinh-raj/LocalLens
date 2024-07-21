@@ -8,6 +8,7 @@ using LocalLens.WebApi.Errors.Auth;
 using LocalLens.WebApi.Messages.Auth;
 using LocalLens.WebApi.ResultPattern;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -68,13 +69,18 @@ public class AuthService : IAuthService
             return AuthErrors.UserCreateFailure;
         }
 
+        var isUserPreferencesCompleted = await _dbContext
+            .UserPreferences
+            .AnyAsync(x => x.UserId == userId);
+
         var claims = GetClaims(userInfo, resultOfCreateUser.Item2.Id);
         var (accessToken, accessTokenExpiry) = GenerateAccessToken(claims);
 
         var response = new GoogleLoginResponse
         {
             AccessToken = accessToken,
-            ExpiryTimeUtc = accessTokenExpiry
+            ExpiryTimeUtc = accessTokenExpiry,
+            IsPreferencesCompleted = isUserPreferencesCompleted
         };
 
         return (response, AuthMessages.LoginSuccess);
